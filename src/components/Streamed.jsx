@@ -3,6 +3,24 @@ import React, { useEffect, useRef } from "react";
 const Response = ({ model, prompt }) => {
 	const streamRef = useRef();
 
+	const outputRef = useRef();
+
+	const handleStream = () => {
+		const reader = streamRef.current.getReader();
+		const pump = () => {
+			reader.read().then(({ done, value }) => {
+				if (done) {
+					return;
+				}
+
+				outputRef.current.textContent += value;
+				pump();
+			});
+		};
+
+		pump();
+	};
+
 	useEffect(() => {
 		const fetchData = async () => {
 			const response = await fetch(
@@ -53,24 +71,6 @@ const Response = ({ model, prompt }) => {
 			<button onClick={handleStream}>Stream Response</button>
 		</div>
 	);
-};
-
-const outputRef = useRef();
-
-const handleStream = () => {
-	const reader = streamRef.current.getReader();
-	const pump = () => {
-		reader.read().then(({ done, value }) => {
-			if (done) {
-				return;
-			}
-
-			outputRef.current.textContent += value;
-			pump();
-		});
-	};
-
-	pump();
 };
 
 export default Response;
